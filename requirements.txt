@@ -1,0 +1,6 @@
+Django
+djangorestframework
+celery
+redis
+psycopg2-binary>=2.8.5
+beautifulsoup4
