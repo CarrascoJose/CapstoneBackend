@@ -9,14 +9,15 @@ services:
     volumes:
       - ./app:/app
     container_name: django_app
-    command: >
-      sh -c "python3 manage.py migrate &&
-             python3 manage.py wait_for_db &&
-             python3 manage.py runserver 0.0.0.0:8000"
+    # command: >
+    #   sh -c "python3 manage.py migrate &&
+    #          python3 manage.py wait_for_db &&
+    #          python3 manage.py runserver 0.0.0.0:8000"
     env_file:
       - ./.env.dev
     depends_on:
       - db
+    tty: true
   
   db:
     image: postgres
