@@ -2,7 +2,10 @@ import asyncio
 from bs4 import BeautifulSoup
 import requests_html
 from requests_html import AsyncHTMLSession
+
 import time
+import functools
+import re
 
 # Get urls from each market given the basket passed by the user
 def get_lider_urls(basket):
@@ -16,7 +19,7 @@ async def fetch_html(url:str, session:AsyncHTMLSession):
     # Async coroutine to fetch and render the pages
     r = await session.get(url)
     print(f"Response received of: {url}")
-    await r.html.arender(timeout=20)
+    await r.html.arender(sleep=2,timeout=20)
     print(f"Rendered: {url}")
     return r.html.raw_html
 
@@ -34,9 +37,11 @@ async def lider_scraper(url: str, session: AsyncHTMLSession):
         # Maybe change BeautifulSoup
         try:
             soup = BeautifulSoup(html,'lxml')
-            div = soup.find('div',class_='product-details')
+            product_name = soup.find('span',class_='product-description').text
+            price = soup.find('span',class_='price-sell').text
             return {
-                'div':div
+                'name':product_name,
+                'price':price
             }
         except Exception as e:
             return {
@@ -55,10 +60,18 @@ async def acuenta_scraper(url: str, session: AsyncHTMLSession):
         # Here the magic
         try:
             soup = BeautifulSoup(html,'lxml')
-            div = soup.find('div',class_='prod--default__content')
+            prices = soup.find_all('p',class_='prod--default__price__current')
+            min_price_tag = functools.reduce(lambda a,b: a if int(re.sub('[\$,.]','',a.text)) else b, prices)
+
+            min_price = min_price_tag.text
+
+            product_name = min_price_tag.parent.parent.find('p',class_='prod__name').span.text
+
             return {
-                'div':div
+                'name':product_name,
+                'price':min_price
             }
+            
         except Exception as e:
             return {
                 'message':'Element not found'
