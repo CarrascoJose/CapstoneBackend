@@ -19,7 +19,7 @@ async def fetch_html(url:str, session:AsyncHTMLSession):
     # Async coroutine to fetch and render the pages
     r = await session.get(url)
     print(f"Response received of: {url}")
-    await r.html.arender(sleep=2,timeout=20)
+    await r.html.arender(sleep=3,timeout=20)
     print(f"Rendered: {url}")
     return r.html.raw_html
 
@@ -61,7 +61,7 @@ async def acuenta_scraper(url: str, session: AsyncHTMLSession):
         try:
             soup = BeautifulSoup(html,'lxml')
             prices = soup.find_all('p',class_='prod--default__price__current')
-            min_price_tag = functools.reduce(lambda a,b: a if int(re.sub('[\$,.]','',a.text)) else b, prices)
+            min_price_tag = functools.reduce(lambda a,b: a if int(re.sub('[\$,.]','',a.text)) < int(re.sub('[\$,.]','',b.text)) else b, prices)
 
             min_price = min_price_tag.text
 
@@ -74,7 +74,7 @@ async def acuenta_scraper(url: str, session: AsyncHTMLSession):
             
         except Exception as e:
             return {
-                'message':'Element not found'
+                'message':f'Element not found. Error: {e}'
             }
 
 async def market_scraper(urls):

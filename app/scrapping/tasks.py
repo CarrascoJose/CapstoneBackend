@@ -4,7 +4,7 @@ from celery import shared_task
 
 from .models import Basket
 from .serializers import TestSerializer
-from .func import market_scraper, get_lider_urls, get_acuenta_urls
+from .scraping_func import market_scraper, get_lider_urls, get_acuenta_urls
 
 
 @shared_task
