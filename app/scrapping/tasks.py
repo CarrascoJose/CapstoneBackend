@@ -4,7 +4,7 @@ from celery import shared_task
 
 from .models import Basket
 from .serializers import TestSerializer
-from .func import market_scraper, get_lider_urls, get_acuenta_urls
+from .scraping_func import market_scraper, get_lider_urls, get_acuenta_urls
 
 
 @shared_task
@@ -28,10 +28,7 @@ def compare(basket_id):
         # Start the event loop to run asynchronous web scraper
         results = asyncio.get_event_loop().run_until_complete(market_scraper(urls))
         print(results)
-        
-        # NOTE AQUI IRÍA LA COMPARACIÓN DE LOS PRECIOS
-        # TODO: Implementar ahora los códigos de web scraping en las funciones en func.py
-
+        #TODO: MEJORAR LAS EXCEPCIONES Y VER CASOS DE RETURN
         basket.save()
         return basket.first_market
 
