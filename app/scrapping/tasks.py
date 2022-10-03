@@ -4,7 +4,8 @@ from celery import shared_task
 
 from .models import Basket
 from .serializers import TestSerializer
-from .scraping_func import market_scraper, get_lider_urls, get_acuenta_urls, get_jumbo_urls, get_sisabel_urls
+from .scraping_func import market_scraper
+from .get_urls import get_lider_urls, get_acuenta_urls, get_jumbo_urls, get_sisabel_urls
 
 
 @shared_task
@@ -30,8 +31,9 @@ def compare(basket_id):
         }
 
         # Start the event loop to run asynchronous web scraper
-        results = asyncio.get_event_loop().run_until_complete(market_scraper(urls))
-        print(results)
+        result = asyncio.get_event_loop().run_until_complete(market_scraper(urls))
+        #print(results)
+        basket.first_market = result
         basket.save()
         return basket.first_market
 
