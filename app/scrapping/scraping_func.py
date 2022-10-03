@@ -8,19 +8,7 @@ import functools
 import re
 from .utils import format_to_int, total_sum
 
-# Get urls from each market given the basket passed by the user
-def get_lider_urls(basket):
-    return [f'https://www.lider.cl/supermercado/search?Ns=sku.internetPrice%7C0&Ntt={product}' for product in basket]
 
-def get_acuenta_urls(basket):
-    return [f'https://www.acuenta.cl/search?name={product}' for product in basket]
-
-def get_jumbo_urls(basket):
-  return ["https://www.jumbo.cl/busqueda?ft="+product.replace(' ', '%20')+"&o=OrderByPriceASC&page=1" for product in basket]
-
-def get_sisabel_urls(basket):
-  return ["https://www.santaisabel.cl/busqueda?ft="+product.replace(' ', '%20')+"&o=OrderByPriceASC&page=1" for product in basket]
-######################
 
 async def fetch_html(url:str, session:AsyncHTMLSession, sleep: int):
     # Async coroutine to fetch and render the pages
@@ -43,7 +31,7 @@ async def get_soup(url: str, session: AsyncHTMLSession, sleep: int):
         return soup 
 
 
-async def lider_scraper(url: str, session: AsyncHTMLSession, sleep: int):
+async def lider_scraper(url: str, amount: int, session: AsyncHTMLSession, sleep: int):
     # Async coroutine to implement the lider web scraper
     try:
         soup = await get_soup(url=url, session=session, sleep=sleep)
@@ -64,7 +52,7 @@ async def lider_scraper(url: str, session: AsyncHTMLSession, sleep: int):
 
         return {
             'name':product_name.string,
-            'price':format_to_int(price.string)
+            'price':format_to_int(price.string) * amount
         }
 
     except Exception as e:
@@ -74,7 +62,7 @@ async def lider_scraper(url: str, session: AsyncHTMLSession, sleep: int):
             'price':0
         }
 
-async def acuenta_scraper(url: str, session: AsyncHTMLSession, sleep: int):
+async def acuenta_scraper(url: str, amount: int, session: AsyncHTMLSession, sleep: int):
     # Async coroutine to implement the lider web scraper
     try:
         soup = await get_soup(url=url, session=session, sleep=sleep)
@@ -98,7 +86,7 @@ async def acuenta_scraper(url: str, session: AsyncHTMLSession, sleep: int):
 
         return {
             'name':product_name,
-            'price':format_to_int(min_price)
+            'price':format_to_int(min_price) * amount
         }    
 
     except Exception as e:
@@ -108,7 +96,7 @@ async def acuenta_scraper(url: str, session: AsyncHTMLSession, sleep: int):
             'price':0
         }
 
-async def cencosud_scraper(url: str, session: AsyncHTMLSession, sleep: int):
+async def cencosud_scraper(url: str, amount: int, session: AsyncHTMLSession, sleep: int):
   try:
     soup  = await get_soup(url, session, sleep)
     all_items = soup.find_all('div', class_="shelf-product-island")
@@ -130,7 +118,7 @@ async def cencosud_scraper(url: str, session: AsyncHTMLSession, sleep: int):
     item_price = cheap_item.find('span', class_="price-best").string if cheap_item.find('span',class_="price-best") else cheap_item.find('span', class_="product-sigle-price-wrapper").string
     return {
       'name':item_name,
-      'price':format_to_int(item_price)
+      'price':format_to_int(item_price) * amount
     }
   
   except Exception as e:
@@ -143,10 +131,10 @@ async def cencosud_scraper(url: str, session: AsyncHTMLSession, sleep: int):
 async def market_scraper(urls):
     # Initializating session and tasks for each market and their respective urls
     session = AsyncHTMLSession()
-    lider_tasks = asyncio.gather(*[lider_scraper(url,session,0) for url in urls['lider']])
-    acuenta_tasks = asyncio.gather(*[acuenta_scraper(url,session,3) for url in urls['acuenta']])
-    jumbo_tasks = asyncio.gather(*[cencosud_scraper(url, session, 5) for url in urls['jumbo']])
-    sisabel_tasks = asyncio.gather(*[cencosud_scraper(url, session, 5) for url in urls['santa_isabel']])
+    lider_tasks = asyncio.gather(*[lider_scraper(item["url"],item["amount"],session,0) for item in urls['lider']])
+    acuenta_tasks = asyncio.gather(*[acuenta_scraper(item["url"],item["amount"],session,3) for item in urls['acuenta']])
+    jumbo_tasks = asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],session,5) for item in urls['jumbo']])
+    sisabel_tasks = asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],session,5) for item in urls['santa_isabel']])
 
     # Gathering the tasks and await them
     results = await asyncio.gather(lider_tasks,acuenta_tasks,jumbo_tasks,sisabel_tasks)
@@ -167,4 +155,4 @@ async def market_scraper(urls):
 
     # Close session and return
     await session.close()
-    return f"Most cheap in: {min(final_data, key=final_data.get)}"
+    return min(final_data, key=final_data.get)#f"Most cheap in: {min(final_data, key=final_data.get)}"
