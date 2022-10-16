@@ -6,21 +6,22 @@ from requests_html import AsyncHTMLSession
 import time
 import functools
 import re
-from .utils import format_to_int, total_sum
+from .utils import format_to_int, total_sum, check_miss_values
+from .errors import URLDoesNotExist
 
 
 
 async def fetch_html(url:str, session:AsyncHTMLSession, sleep: int):
     # Async coroutine to fetch and render the pages
-    try:
-        r = await session.get(url)
+    r = await session.get(url)
+    if r.status_code == 200:
         print(f"Response received of: {url}")
         if sleep>0:
             await r.html.arender(sleep=sleep,timeout=30)
         print(f"Rendered: {url}")
         return r
-    except Exception as e:
-        raise Exception(e.message)
+    else:
+        raise URLDoesNotExist()
 
 def get_soup(r):
     # Block of code to get the html and parse
@@ -28,8 +29,7 @@ def get_soup(r):
     soup = BeautifulSoup(html,'lxml')
     return soup 
 
-
-async def lider_scraper(url: str, amount: int , session: AsyncHTMLSession, sleep: int):
+async def lider_scraper(url: str, amount: int, product: str, session: AsyncHTMLSession, sleep: int):
     # Async coroutine to implement the lider web scraper
     try:
         r = await fetch_html(url, session, sleep)
@@ -52,17 +52,19 @@ async def lider_scraper(url: str, amount: int , session: AsyncHTMLSession, sleep
 
         return {
             'name':product_name.string,
-            'price':format_to_int(price.string)*amount
+            'price':format_to_int(price.string)*amount,
+            'product_searched':product
         }
 
     except Exception as e:
         print(e)
         return {
             'name':"Producto no encontrado",
-            'price':0
+            'price':0,
+            'product_searched':product
         }
 
-async def acuenta_scraper(url: str, amount: int, session: AsyncHTMLSession, sleep: int):
+async def acuenta_scraper(url: str, amount: int, product: str, session: AsyncHTMLSession, sleep: int):
     # Async coroutine to implement the acuenta web scraper
     try:
         r = await fetch_html(url, session, sleep)
@@ -87,17 +89,19 @@ async def acuenta_scraper(url: str, amount: int, session: AsyncHTMLSession, slee
 
         return {
             'name':product_name,
-            'price':format_to_int(min_price)*amount
+            'price':format_to_int(min_price)*amount,
+            'product_searched':product
         }    
 
     except Exception as e:
-        print(e)
+        print(f"Error: {e} Url: {url}")
         return {
             'name':"Producto no encontrado",
-            'price':0
+            'price':0,
+            'product_searched':product
         }
 
-async def cencosud_scraper(url: str, amount: int, session: AsyncHTMLSession, sleep: int):
+async def cencosud_scraper(url: str, amount: int, product: str, session: AsyncHTMLSession, sleep: int):
   try:
     r = await fetch_html(url, session, sleep)
     soup = get_soup(r)
@@ -121,32 +125,43 @@ async def cencosud_scraper(url: str, amount: int, session: AsyncHTMLSession, sle
     item_price = cheap_item.find('span', class_="price-best").string if cheap_item.find('span',class_="price-best") else cheap_item.find('span', class_="product-sigle-price-wrapper").string
     return {
       'name':item_name,
-      'price':format_to_int(item_price) * amount
+      'price':format_to_int(item_price) * amount,
+      'product_searched':product
     }
   
   except Exception as e:
     print(e)
     return {
       'name':'Producto no encontrado',
-      'price': 0
+      'price': 0,
+      'product_searched':product
     }
+
 
 async def market_scraper(urls):
     # Initializating session and tasks for each market and their respective urls
     session = AsyncHTMLSession()
 
     # Running separate tasks
-    lider = await asyncio.gather(*[lider_scraper(item["url"],item["amount"],session,0) for item in urls['lider']])
-    acuenta = await asyncio.gather(*[acuenta_scraper(item["url"],item["amount"],session,5) for item in urls['acuenta']])
-    jumbo = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],session,3) for item in urls['jumbo']])
-    ssisabel = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],session,3) for item in urls['santa_isabel']])
+    lider = await asyncio.gather(*[lider_scraper(item["url"],item["amount"],item["product"],session,0) for item in urls['lider']])
+    acuenta = await asyncio.gather(*[acuenta_scraper(item["url"],item["amount"],item["product"],session,5) for item in urls['acuenta']])
+    jumbo = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],item["product"],session,3) for item in urls['jumbo']])
+    ssisabel = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],item["product"],session,3) for item in urls['santa_isabel']])
+    
 
-    sum_lider, sum_acuenta, sum_jumbo, sum_sisabel = total_sum(lider), total_sum(acuenta), total_sum(jumbo), total_sum(ssisabel)
+    markets = [lider,acuenta,jumbo,ssisabel]
 
-    print(f"Lider total: {sum_lider}\n\n")
-    print(f"Acuenta total: {sum_acuenta}\n\n")
-    print(f"Jumbo total: {sum_jumbo}\n\n")
-    print(f"Santa Isabel total: {sum_sisabel}\n\n")
+    print(lider,"\n",acuenta,"\n",jumbo,"\n",ssisabel)
+    final_lider, final_acuenta, final_jumbo, final_ssisabel = check_miss_values(markets)
+    print("\n\n")
+    print(final_lider, "\n",final_acuenta ,"\n",final_jumbo, "\n",final_ssisabel)
+
+    sum_lider, sum_acuenta, sum_jumbo, sum_sisabel = total_sum(final_lider), total_sum(final_acuenta) , total_sum(final_jumbo), total_sum(final_ssisabel)
+
+    # print(f"Lider total: {sum_lider}\n\n")
+    # print(f"Acuenta total: {sum_acuenta}\n\n")
+    # print(f"Jumbo total: {sum_jumbo}\n\n")
+    # print(f"Santa Isabel total: {sum_sisabel}\n\n")
 
     final_data = {
         'lider':sum_lider,
@@ -157,4 +172,4 @@ async def market_scraper(urls):
 
     # Close session and return
     await session.close()
-    return min(final_data, key=final_data.get)#f"Most cheap in: {min(final_data, key=final_data.get)}"
+    return min(final_data, key=final_data.get)

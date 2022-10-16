@@ -17,7 +17,6 @@ def compare(basket_id):
         # Get the list with the most cheap products and the total price of the basket
         basket_data = basket_serializer.data['basket']['products']
         
-        # TODO: Create a function to validate each url
         lider_urls = get_lider_urls(basket_data)
         acuenta_urls = get_acuenta_urls(basket_data)
         jumbo_urls = get_jumbo_urls(basket_data)
@@ -33,7 +32,7 @@ def compare(basket_id):
 
         # Start the event loop to run asynchronous web scraper
         result = asyncio.get_event_loop().run_until_complete(market_scraper(urls))
-        print(result)
+        
         basket.first_market = result
         basket.save()
         return basket.first_market
