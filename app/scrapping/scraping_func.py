@@ -151,10 +151,10 @@ async def market_scraper(urls):
 
     markets = [lider,acuenta,jumbo,ssisabel]
 
-    print(lider,"\n",acuenta,"\n",jumbo,"\n",ssisabel)
+    # print(lider,"\n",acuenta,"\n",jumbo,"\n",ssisabel)
     final_lider, final_acuenta, final_jumbo, final_ssisabel = check_miss_values(markets)
-    print("\n\n")
-    print(final_lider, "\n",final_acuenta ,"\n",final_jumbo, "\n",final_ssisabel)
+    # print("\n\n")
+    # print(final_lider, "\n",final_acuenta ,"\n",final_jumbo, "\n",final_ssisabel)
 
     sum_lider, sum_acuenta, sum_jumbo, sum_sisabel = total_sum(final_lider), total_sum(final_acuenta) , total_sum(final_jumbo), total_sum(final_ssisabel)
 
@@ -172,4 +172,4 @@ async def market_scraper(urls):
 
     # Close session and return
     await session.close()
-    return min(final_data, key=final_data.get)
+    return sorted(final_data.items(), key=lambda x: x[1], reverse=False)
