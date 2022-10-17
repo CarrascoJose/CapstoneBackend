@@ -172,5 +172,4 @@ async def market_scraper(urls):
 
     # Close session and return
     await session.close()
-    sorted_markets = sorted(final_data.items(), key=lambda x: x[1], reverse=False)
-    return {k:v for k,v in sorted_markets}
+    return sorted(final_data.items(), key=lambda x: x[1], reverse=False)
