@@ -33,9 +33,9 @@ def compare(basket_id):
         # Start the event loop to run asynchronous web scraper
         result = asyncio.get_event_loop().run_until_complete(market_scraper(urls))
         
-        basket.first_market = result
+        basket.ranking = result
         basket.save()
-        return basket.first_market
+        return basket.ranking
 
     except Exception as e:
         basket.first_masket = "error"
