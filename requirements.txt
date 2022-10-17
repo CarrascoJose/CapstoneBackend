@@ -10,3 +10,4 @@ requests-html
 pytest
 pytest-asyncio
 pytest-django
+django-cors-headers
