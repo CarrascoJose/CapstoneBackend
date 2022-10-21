@@ -33,7 +33,7 @@ class CreateBasketTaskView(
 
             self.patch(basket_id, {"task_id":task.id})
 
-        return Response({"tasks_id":task.id},status=status.HTTP_201_CREATED)
+        return Response({"basket_id":basket_id,"task_id":task.id},status=status.HTTP_201_CREATED)
     
     def patch(self, pk, taksid):
         instance = self.get_object(pk)
