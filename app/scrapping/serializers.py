@@ -5,7 +5,7 @@ class PostBasketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Basket
-        fields = ['basket']
+        fields = ['basket','task_id']
 
     def save(self, **kwargs):
         if self.instance is not None:

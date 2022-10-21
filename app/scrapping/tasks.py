@@ -1,16 +1,17 @@
 import asyncio
 
 from celery import shared_task
+from celery_progress.backend import ProgressRecorder
 
 from .models import Basket
 from .serializers import PostBasketSerializer
 
 from .scraping_func import market_scraper
 from .get_urls import get_lider_urls, get_acuenta_urls, get_jumbo_urls, get_sisabel_urls
+import time
 
-
-@shared_task
-def compare(id):
+@shared_task(bind=True)
+def compare(self,id):
     basket = Basket.objects.get(id=id)
     try:
         basket_serializer = PostBasketSerializer(basket)
@@ -29,9 +30,12 @@ def compare(id):
             'santa_isabel':sisabel_urls
         }
 
-        # Start the event loop to run asynchronous web scraper
-        result = asyncio.get_event_loop().run_until_complete(market_scraper(urls))
+        progress_recorder = ProgressRecorder(self)
 
+        # Start the event loop to run asynchronous web scraper
+        result = asyncio.get_event_loop().run_until_complete(market_scraper(urls,progress_recorder))
+
+        
         basket.ranking = result
         basket.save()
         return result

@@ -11,3 +11,4 @@ pytest
 pytest-asyncio
 pytest-django
 django-cors-headers
+celery-progress

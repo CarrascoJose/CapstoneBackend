@@ -31,6 +31,9 @@ INSTALLED_APPS = [
 
     #Django apps
     'scrapping',
+
+    #celery-progress
+    'celery_progress',
 ]
 
 MIDDLEWARE = [
