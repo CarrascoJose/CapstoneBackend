@@ -27,5 +27,6 @@ class BasketResultsSerializer(serializers.ModelSerializer):
         model = Basket
         fields = [
             'basket',
-            'ranking'
+            'ranking',
+            'task_id'
         ]

@@ -72,12 +72,12 @@ async def acuenta_scraper(url: str, amount: int, product: str, session: AsyncHTM
         prices = soup.find_all('p',class_='sc-jAaTju')
         #print(soup)
         tries = 0
-        while len(prices)<1 and tries<=1:
-            print("Reintentando...")
-            r = await fetch_html(url, session, sleep)
-            soup = get_soup(r)
-            prices = soup.find_all('p',class_='sc-jAaTju')
-            tries+=1
+        # while len(prices)<1 and tries<=1:
+        #     print("Reintentando...")
+        #     r = await fetch_html(url, session, sleep)
+        #     soup = get_soup(r)
+        #     prices = soup.find_all('p',class_='sc-jAaTju')
+        #     tries+=1
         
         if tries>1:
             raise RuntimeError("Número de intentos de carga superados")
@@ -147,7 +147,7 @@ async def market_scraper(urls,progress_recorder):
     progress_recorder.set_progress(i+1,5)
     lider = await asyncio.gather(*[lider_scraper(item["url"],item["amount"],item["product"],session,0) for item in urls['lider']])
     progress_recorder.set_progress(i+1,5)
-    acuenta = await asyncio.gather(*[acuenta_scraper(item["url"],item["amount"],item["product"],session,5) for item in urls['acuenta']])
+    acuenta = await asyncio.gather(*[acuenta_scraper(item["url"],item["amount"],item["product"],session,0) for item in urls['acuenta']])
     progress_recorder.set_progress(i+1,5)
     jumbo = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],item["product"],session,3) for item in urls['jumbo']])
     progress_recorder.set_progress(i+1,5)
