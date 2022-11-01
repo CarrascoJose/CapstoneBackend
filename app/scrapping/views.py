@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView, get_object_or_404
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from .tasks import compare
 from .models import Basket
@@ -23,17 +24,17 @@ class CreateBasketTaskView(
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
 
         if serializer.is_valid():
+            instance = serializer.save(user=request.user)
             basket_id = instance.id
 
             task = compare.delay(basket_id)
 
             self.patch(basket_id, {"task_id":task.id})
 
-        return Response({"basket_id":basket_id,"task_id":task.id},status=status.HTTP_201_CREATED)
+            return Response({"basket_id":basket_id,"task_id":task.id},status=status.HTTP_201_CREATED)
+        return Response({"error":"Something go wrong"},status=status.HTTP_400)
     
     def patch(self, pk, taksid):
         instance = self.get_object(pk)
@@ -50,22 +51,25 @@ class CreateBasketTaskView(
         obj = Basket.objects.filter(id=pk).first()
         return obj
 
+
+
+
 class GetBasketsView(
-    viewsets.GenericViewSet,
+    RetrieveModelMixin,
     ListModelMixin,
-    RetrieveModelMixin
+    viewsets.GenericViewSet,
 ):
     queryset = Basket.objects.all()
     serializer_class = ListBasketSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request,*args, **kwargs):
-        pk = kwargs.get("pk")
-        if pk is not None:
-            return self.retrieve(self, request, *args, **kwargs)
-        return self.list(self, request, *args, **kwargs)
+
+    def get_queryset(self):
+        print(self.request.user)
+        return self.request.user.basket_set.all()
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return ListBasketSerializer
-        return BasketResultsSerializer
+        if self.action == "retrieve":
+            return BasketResultsSerializer
+        return super().get_serializer_class()
        

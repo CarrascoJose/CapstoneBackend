@@ -5,14 +5,17 @@ class PostBasketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Basket
-        fields = ['basket','task_id']
+        fields = ['user','basket','task_id']
 
     def save(self, **kwargs):
+        validated_data = {**self.validated_data, **kwargs}
         if self.instance is not None:
-            self.instance = self.update(self.instance, self.validated_data)
+            self.instance = self.update(self.instance, validated_data)
             return self.instance
-        basket = Basket.objects.create(**self.validated_data)
-        return basket
+        else:
+            self.instance = self.create(validated_data)
+
+        return self.instance
 
 
 class ListBasketSerializer(serializers.ModelSerializer):
