@@ -12,9 +12,9 @@ from .serializers import PostBasketSerializer, ListBasketSerializer, BasketResul
 
 
 class CreateBasketTaskView(
-    GenericAPIView,
     CreateModelMixin,
-    UpdateModelMixin
+    UpdateModelMixin,
+    GenericAPIView
 ):
     queryset = Basket.objects.all()
     serializer_class = PostBasketSerializer

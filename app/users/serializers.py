@@ -1,12 +1,23 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.conf import settings
+from .models import CustomUser
 
 class RegisterSerializer(ModelSerializer):
 
     class Meta:
-        model = settings.AUTH_USER_MODEL
+        model = CustomUser
         fields = ['email','password','username','first_name','last_name']
+        extra_kwargs = {'password':{'write_only':True}}
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+    
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
