@@ -50,6 +50,7 @@ REST_FRAMEWORK = {
 }
 
 
+# Set ACCESS_TOKEN_LIFETIME and REFRESH_TOKEN_LIFETIME to a lower amount of second to debug functionality
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
     'REFRESH_TOKEN_LIFETIME': timedelta(seconds=20),

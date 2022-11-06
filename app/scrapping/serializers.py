@@ -6,6 +6,7 @@ class PostBasketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Basket
         fields = ['user','basket','task_id']
+        extra_kwargs = {"user": {"required": False, "allow_null": True}}
 
     def save(self, **kwargs):
         validated_data = {**self.validated_data, **kwargs}

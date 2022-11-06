@@ -6,6 +6,8 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveMode
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from .permissions import CheckIfAnonymousUser
+
 from .tasks import compare
 from .models import Basket
 from .serializers import PostBasketSerializer, ListBasketSerializer, BasketResultsSerializer
@@ -24,9 +26,14 @@ class CreateBasketTaskView(
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-
+        print(request.data)
         if serializer.is_valid():
-            instance = serializer.save(user=request.user)
+            user = request.user
+            if user.is_authenticated:
+                instance = serializer.save(user=request.user)
+            else:
+                instance = serializer.save()
+
             basket_id = instance.id
 
             task = compare.delay(basket_id)
@@ -51,25 +58,30 @@ class CreateBasketTaskView(
         obj = Basket.objects.filter(id=pk).first()
         return obj
 
-
-
-
-class GetBasketsView(
-    RetrieveModelMixin,
+class GetUserBasketsView(
     ListModelMixin,
-    viewsets.GenericViewSet,
+    GenericAPIView
 ):
     queryset = Basket.objects.all()
     serializer_class = ListBasketSerializer
     permission_classes = [IsAuthenticated]
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        print(self.request.user)
         return self.request.user.basket_set.all()
 
-    def get_serializer_class(self):
-        if self.action == "retrieve":
-            return BasketResultsSerializer
-        return super().get_serializer_class()
+
+class GetBasketResultsView(
+    RetrieveModelMixin,
+    GenericAPIView
+):
+    queryset = Basket.objects.all()
+    serializer_class = BasketResultsSerializer
+    permission_classes = [CheckIfAnonymousUser]
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
        
