@@ -143,16 +143,21 @@ async def market_scraper(urls,progress_recorder):
     session = AsyncHTMLSession()
 
     # Running separate tasks and keeping track of the progress
-    i = 0
-    progress_recorder.set_progress(i+1,5)
+    percent = 0
+    percent+=1
+    progress_recorder.set_progress(percent,5)
     lider = await asyncio.gather(*[lider_scraper(item["url"],item["amount"],item["product"],session,0) for item in urls['lider']])
-    progress_recorder.set_progress(i+1,5)
+    percent+=1
+    progress_recorder.set_progress(percent,5)
     acuenta = await asyncio.gather(*[acuenta_scraper(item["url"],item["amount"],item["product"],session,0) for item in urls['acuenta']])
-    progress_recorder.set_progress(i+1,5)
+    percent+=1
+    progress_recorder.set_progress(percent,5)
     jumbo = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],item["product"],session,3) for item in urls['jumbo']])
-    progress_recorder.set_progress(i+1,5)
+    percent+=1
+    progress_recorder.set_progress(percent,5)
     ssisabel = await asyncio.gather(*[cencosud_scraper(item["url"],item["amount"],item["product"],session,3) for item in urls['santa_isabel']])
-    progress_recorder.set_progress(i+1,5)
+    percent+=1
+    progress_recorder.set_progress(percent,5)
     
 
     markets = [lider,acuenta,jumbo,ssisabel]
