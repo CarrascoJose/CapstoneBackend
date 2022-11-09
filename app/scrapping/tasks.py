@@ -41,6 +41,6 @@ def compare(self,id):
         return result
 
     except Exception as e:
-        print(e)
+        return e
     
     

@@ -20,10 +20,15 @@ class PostBasketSerializer(serializers.ModelSerializer):
 
 
 class ListBasketSerializer(serializers.ModelSerializer):
-
+    created_at = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
     class Meta:
         model = Basket
-        fields = '__all__'
+        fields = [
+            'id',
+            'basket',
+            'ranking',
+            'created_at'
+        ]
 
 class BasketResultsSerializer(serializers.ModelSerializer):
 
