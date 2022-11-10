@@ -10,7 +10,8 @@ from .permissions import CheckIfAnonymousUser
 
 from .tasks import compare
 from .models import Basket
-from .serializers import PostBasketSerializer, ListBasketSerializer, BasketResultsSerializer
+from users.models import CustomUser
+from .serializers import PostBasketSerializer, UserBasketsSerializer, BasketResultsSerializer
 
 
 class CreateBasketTaskView(
@@ -58,19 +59,17 @@ class CreateBasketTaskView(
         obj = Basket.objects.filter(id=pk).first()
         return obj
 
-class GetUserBasketsView(
-    ListModelMixin,
+
+class GetExternalUserBaskets(
+    RetrieveModelMixin,
     GenericAPIView
 ):
-    queryset = Basket.objects.all()
-    serializer_class = ListBasketSerializer
-    permission_classes = [IsAuthenticated]
+
+    queryset = CustomUser.objects.all()
+    serializer_class = UserBasketsSerializer
 
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return self.request.user.basket_set.all()
+        return self.retrieve(request, *args, **kwargs)
 
 
 class GetBasketResultsView(
