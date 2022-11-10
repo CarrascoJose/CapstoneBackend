@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Basket
+from users.models import CustomUser
 
 class PostBasketSerializer(serializers.ModelSerializer):
 
@@ -19,16 +20,28 @@ class PostBasketSerializer(serializers.ModelSerializer):
         return self.instance
 
 
-class ListBasketSerializer(serializers.ModelSerializer):
+class BasketSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
     class Meta:
         model = Basket
         fields = [
-            'id',
             'basket',
             'ranking',
             'created_at'
         ]
+
+
+class UserBasketsSerializer(serializers.ModelSerializer):
+    baskets = BasketSerializer(many=True)
+    class Meta:
+        model = CustomUser
+        fields = [
+            'first_name',
+            'last_name',
+            'baskets'
+        ]
+
+
 
 class BasketResultsSerializer(serializers.ModelSerializer):
 

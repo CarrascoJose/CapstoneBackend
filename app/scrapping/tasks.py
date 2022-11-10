@@ -14,6 +14,7 @@ import time
 def compare(self,id):
     basket = Basket.objects.get(id=id)
     try:
+        t1 = time.perf_counter()
         basket_serializer = PostBasketSerializer(basket)
         # Get the list with the most cheap products and the total price of the basket
         basket_data = basket_serializer.data['basket']
@@ -35,8 +36,10 @@ def compare(self,id):
         # Start the event loop to run asynchronous web scraper
         result = asyncio.get_event_loop().run_until_complete(market_scraper(urls,progress_recorder))
 
+        t2 = time.perf_counter()
         
         basket.ranking = result
+        basket.search_duration = round(t2-t1,3)
         basket.save()
         return result
 
