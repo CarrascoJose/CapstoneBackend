@@ -30,7 +30,7 @@ class CreateBasketTaskView(
         
         if serializer.is_valid():
             if len(serializer.data['basket'])>20:
-                return Response({"error":"¡Porfavor, por el momento introduzca menos de 25 productos!"},status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error":"¡Porfavor, por el momento introduzca menos de 20 productos!"},status=status.HTTP_400_BAD_REQUEST)
             user = request.user
             if user.is_authenticated:
                 instance = serializer.save(user=request.user)
