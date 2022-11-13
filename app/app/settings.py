@@ -99,6 +99,10 @@ MIDDLEWARE = [
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
   'http://localhost:3000',
+  'https://keoferton.cl',
+  'http://keoferton.cl',
+  'https://ke-oferton.vercel.app',
+  'http://ke-oferton.vercel.app',
 )
 
 ROOT_URLCONF = 'app.urls'
