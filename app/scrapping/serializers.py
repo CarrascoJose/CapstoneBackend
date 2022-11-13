@@ -52,3 +52,21 @@ class BasketResultsSerializer(serializers.ModelSerializer):
             'ranking',
             'task_id'
         ]
+
+
+class GetAllBaskets(serializers.ModelSerializer):
+
+    class Meta:
+        model = Basket
+        fields = [
+            'basket',
+            'search_duration'
+        ]
+
+class GetTotalThrift(serializers.ModelSerializer):
+
+    class Meta:
+        model = Basket
+        fields = [
+            'ranking',
+        ]
