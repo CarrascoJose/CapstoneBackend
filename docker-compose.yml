@@ -35,7 +35,7 @@ services:
     restart: always
     build:
       context: .
-    command: celery -A app worker -l info
+    command: celery -A app worker -l info #-P eventlet -c 1000
     volumes:
       - ./app:/app
     container_name: celery
